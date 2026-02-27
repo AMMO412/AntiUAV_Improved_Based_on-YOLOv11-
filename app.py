@@ -1,8 +1,27 @@
 import sys
 import os
+import zipfile
 
-# 将本地的 ultralytics-main 添加到系统路径，确保优先加载修改版的 ultralytics
-sys.path.insert(0, os.path.abspath("ultralytics-main"))
+# ==========================================
+# 0. 自动解压核心源码 (突破 GitHub 100文件限制的秘籍)
+# ==========================================
+# 检查云端是否存在压缩包，且是否还没解压过
+if os.path.exists("ultralytics-main.zip") and not os.path.exists("ultralytics-main/ultralytics"):
+    try:
+        print("📥 正在解压魔改版 YOLO 源码...")
+        with zipfile.ZipFile("ultralytics-main.zip", 'r') as zip_ref:
+            # 直接解压到当前根目录
+            zip_ref.extractall(".")
+        print("✅ 解压完成！")
+    except Exception as e:
+        print(f"❌ 解压失败: {e}")
+
+# 将解压后的魔改版源码路径置于系统最高优先级
+# (做了兼容处理：防止不同电脑压缩软件导致解压出的层级不同)
+if os.path.exists("ultralytics-main/ultralytics"):
+    sys.path.insert(0, os.path.abspath("ultralytics-main"))
+elif os.path.exists("ultralytics"):
+    sys.path.insert(0, os.path.abspath("."))
 
 import streamlit as st
 from ultralytics import YOLO
@@ -159,11 +178,10 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 3. 模型与数据加载 (路径已全部修改为云端根目录直读)
+# 3. 模型与数据加载 
 # ==========================================
 @st.cache_resource
 def load_model():
-    # ⚠️ 修改点 1：直接读取同目录下的 best.pt
     model_path = 'best.pt'
     if not os.path.exists(model_path):
         return None
@@ -175,7 +193,6 @@ def load_model():
 
 @st.cache_data
 def load_training_data():
-    # ⚠️ 修改点 2：直接读取同目录下的 results.csv
     csv_path = 'results.csv'
     if os.path.exists(csv_path):
         df = pd.read_csv(csv_path)
@@ -259,7 +276,6 @@ with tab1:
         with st.expander("点击展开查看 F1曲线、PR曲线 及 验证集可视化", expanded=False):
             img_col1, img_col2 = st.columns(2)
             
-            # ⚠️ 修改点 3：直接读取同目录下的图片
             with img_col1:
                 pr_path = 'BoxPR_curve.png'
                 if os.path.exists(pr_path):
