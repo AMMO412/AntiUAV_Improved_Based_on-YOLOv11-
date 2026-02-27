@@ -159,11 +159,12 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 3. 模型与数据加载
+# 3. 模型与数据加载 (路径已全部修改为云端根目录直读)
 # ==========================================
 @st.cache_resource
 def load_model():
-    model_path = r'runs/train/yolov11_improved_exp/weights/best.pt'
+    # ⚠️ 修改点 1：直接读取同目录下的 best.pt
+    model_path = 'best.pt'
     if not os.path.exists(model_path):
         return None
     try:
@@ -174,7 +175,8 @@ def load_model():
 
 @st.cache_data
 def load_training_data():
-    csv_path = r'runs/train/yolov11_improved_exp/results.csv'
+    # ⚠️ 修改点 2：直接读取同目录下的 results.csv
+    csv_path = 'results.csv'
     if os.path.exists(csv_path):
         df = pd.read_csv(csv_path)
         df.columns = df.columns.str.strip()
@@ -215,7 +217,7 @@ with st.sidebar:
 st.title("🎯 红外无人机检测系统")
 
 # 使用 Tabs 替代 Radio，体验更流畅
-tab1, tab2 = st.tabs(["� 训练数据大屏", "🔍 红外实时侦测"])
+tab1, tab2 = st.tabs(["📈 训练数据大屏", "🔍 红外实时侦测"])
 
 # ----------------- Tab 1: 训练数据大屏 -----------------
 with tab1:
@@ -256,29 +258,29 @@ with tab1:
         st.subheader("🖼️ 深度专业分析图")
         with st.expander("点击展开查看 F1曲线、PR曲线 及 验证集可视化", expanded=False):
             img_col1, img_col2 = st.columns(2)
-            result_dir = r'runs/train/yolov11_improved_exp'
             
+            # ⚠️ 修改点 3：直接读取同目录下的图片
             with img_col1:
-                pr_path = os.path.join(result_dir, 'BoxPR_curve.png')
+                pr_path = 'BoxPR_curve.png'
                 if os.path.exists(pr_path):
                     st.image(pr_path, caption="PR 曲线", use_container_width=True)
                 else:
                     st.warning("PR 曲线未找到")
                     
-                val_path = os.path.join(result_dir, 'val_batch0_pred.jpg')
+                val_path = 'val_batch0_pred.jpg'
                 if os.path.exists(val_path):
                     st.image(val_path, caption="验证集实测切片", use_container_width=True)
                     
             with img_col2:
-                f1_path = os.path.join(result_dir, 'BoxF1_curve.png')
+                f1_path = 'BoxF1_curve.png'
                 if os.path.exists(f1_path):
                     st.image(f1_path, caption="F1 - 置信度 曲线", use_container_width=True)
     else:
-        st.error("❌ 未找到训练日志 (results.csv)，请确保模型已正确训练完毕。")
+        st.error("❌ 未找到训练日志 (results.csv)，请确保模型已正确训练完毕，并上传至 GitHub 仓库。")
 
 # ----------------- Tab 2: 红外实时侦测 -----------------
 with tab2:
-    st.markdown("### � 实时侦测终端")
+    st.markdown("### 🔍 实时侦测终端")
     
     # 卡片式上传区域
     with st.container():
@@ -302,7 +304,7 @@ with tab2:
             
             if st.button("启动侦测协议", type="primary", use_container_width=True):
                 if model is None:
-                    st.error("❌ 模型权重未加载，无法侦测！")
+                    st.error("❌ 模型权重 (best.pt) 未加载，请确保已上传至 GitHub。")
                 else:
                     with st.spinner('雷达扫描中，正在提取微小红外特征...'):
                         try:
